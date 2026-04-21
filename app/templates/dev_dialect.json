@@ -1,0 +1,3 @@
+[
+    { "pattern": "\\b(file|function|class|path)\\s+(.+?)\\s+stop\\b", "handler": "dev_dialect" }
+]
