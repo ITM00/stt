@@ -16,12 +16,20 @@ class RegexTemplate:
 
 class TextPostProcessor:
     def __init__(self, template_path: str) -> None:
-        raw = json.loads(Path(template_path).read_text(encoding="utf-8"))
-        self.templates = [RegexTemplate(**item) for item in raw]
+        self.template_path = template_path
+        self.templates = self._load_templates(template_path)
 
-    def process(self, text: str) -> str:
+    def _load_templates(self, template_path: str) -> list[RegexTemplate]:
+        raw = json.loads(Path(template_path).read_text(encoding="utf-8"))
+        return [RegexTemplate(**item) for item in raw]
+
+    def process(self, text: str, template_path: str | None = None) -> str:
+        templates = self.templates
+        if template_path is not None and template_path != self.template_path:
+            templates = self._load_templates(template_path)
+
         output = text
-        for template in self.templates:
+        for template in templates:
             if template.handler == "dev_dialect":
                 output = re.sub(
                     template.pattern,
