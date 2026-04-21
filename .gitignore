@@ -1,0 +1,11 @@
+.cursor
+.env
+.venv
+docs/*
+!docs/operations/
+docs/operations/*
+!docs/operations/faiss-rebuild.md
+**/__pycache__/
+**.egg-info/
+
+test_setting.py

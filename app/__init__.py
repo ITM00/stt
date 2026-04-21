@@ -1,0 +1,1 @@
+"""STT desktop application package."""

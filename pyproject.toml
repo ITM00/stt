@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stt-desktop"
+version = "0.1.0"
+description = "Personal local-first speech-to-text desktop app."
+readme = "README.md"
+requires-python = ">=3.14"
+authors = [
+  { name = "Local User" }
+]
+dependencies = [
+  "faster-whisper",
+  "sounddevice",
+  "pynput",
+  "pyperclip",
+  "PySide6"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "ruff",
+  "black",
+  "mypy",
+  "pyinstaller"
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py314"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
