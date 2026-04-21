@@ -9,3 +9,4 @@ docs/operations/*
 **.egg-info/
 
 test_setting.py
+logs/*

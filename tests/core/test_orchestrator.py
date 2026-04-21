@@ -1,10 +1,16 @@
+import time
+
 from unittest.mock import Mock, call
+
+from PySide6.QtWidgets import QApplication
 
 from app.core.orchestrator import TranscriptionOrchestrator
 from app.core.transcription import TranscriptionResult
 
 
 def test_toggle_transitions_recording_processing_idle() -> None:
+    qt_app = QApplication.instance() or QApplication([])
+
     recorder = Mock()
     recorder.stop.return_value = b"audio"
     transcriber = Mock()
@@ -23,10 +29,16 @@ def test_toggle_transitions_recording_processing_idle() -> None:
         postprocessor=postprocessor,
         clipboard=clipboard,
         status_sink=status_sink,
+        qt_parent=qt_app,
     )
 
     app.toggle_recording()
     app.toggle_recording()
+
+    deadline = time.time() + 2.0
+    while time.time() < deadline and app.state != "idle":
+        qt_app.processEvents()
+        time.sleep(0.01)
 
     assert app.state == "idle"
     status_sink.update.assert_has_calls([call("recording"), call("processing"), call("idle")])

@@ -39,7 +39,10 @@ class TextPostProcessor:
                 continue
             if template.replacement is None:
                 continue
-            output = re.sub(template.pattern, template.replacement, output)
+            # Use a callable replacer so `replacement` is treated as a literal string.
+            # `re.sub` replacement templates interpret backslashes (e.g. "\\") which breaks
+            # simple punctuation mappings like a single backslash.
+            output = re.sub(template.pattern, lambda _m, repl=template.replacement: repl, output)
         return output.strip()
 
     def _format_dev_dialect(self, match: Match[str]) -> str:
