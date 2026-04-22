@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 
@@ -14,6 +15,7 @@ class OverlayIndicator(QWidget):
         super().__init__()
         self.current_state = "idle"
         self.setWindowTitle("STT Status")
+        self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
         self.label = QLabel("READY", self)
 
         layout = QVBoxLayout(self)
