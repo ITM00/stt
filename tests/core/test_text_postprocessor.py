@@ -19,3 +19,13 @@ def test_backslash_replacement_does_not_use_replacement_templates(tmp_path):
     )
     processor = TextPostProcessor(str(templates))
     assert processor.process("path backslash here") == "path \\ here"
+
+
+def test_patterns_are_applied_case_insensitively(tmp_path):
+    templates = tmp_path / "templates.json"
+    templates.write_text(
+        '[{"pattern":"teh","replacement":"the"}]',
+        encoding="utf-8",
+    )
+    processor = TextPostProcessor(str(templates))
+    assert processor.process("TEH quick") == "the quick"

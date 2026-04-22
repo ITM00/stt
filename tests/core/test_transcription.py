@@ -41,7 +41,7 @@ def test_transcribe_calls_model_transcribe_with_float32_audio() -> None:
         def transcribe(self, audio, beam_size: int = 5, **kwargs):  # noqa: ANN001
             self.last_audio = audio
             assert beam_size == 5
-            assert kwargs.get("language") == "en"
+            assert "language" not in kwargs
             assert audio.dtype == np.float32
             return [type("Segment", (), {"text": "hello"})()], {}
 
@@ -54,7 +54,7 @@ def test_transcribe_calls_model_transcribe_with_float32_audio() -> None:
     service = TranscriptionService(
         model_loader=loader,
         sample_rate=16000,
-        language="en",
+        language=None,
         device="cuda",
         compute_type="float16",
     )
@@ -73,7 +73,7 @@ def test_transcribe_falls_back_to_local_files_only_when_online_check_fails() -> 
     class StubModel:
         def transcribe(self, _audio, beam_size: int = 5, **kwargs):  # noqa: ANN001
             assert beam_size == 5
-            assert kwargs.get("language") == "en"
+            assert "language" not in kwargs
             return [type("Segment", (), {"text": "offline ok"})()], {}
 
     calls: list[dict[str, object]] = []
@@ -86,7 +86,7 @@ def test_transcribe_falls_back_to_local_files_only_when_online_check_fails() -> 
 
     service = TranscriptionService(
         model_loader=loader,
-        language="en",
+        language=None,
         device="cuda",
         compute_type="float16",
     )

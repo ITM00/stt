@@ -13,6 +13,8 @@
     { "pattern": "question mark", "replacement": "?" },
     { "pattern": "exclamation mark", "replacement": "!" },
     { "pattern": "apostrophe", "replacement": "'" },
+    { "pattern": "single quote", "replacement": "'" },
+    { "pattern": "double quote", "replacement": "\"" },
     { "pattern": "quotation mark", "replacement": "\"" },
     { "pattern": "ellipsis", "replacement": "…" },
     { "pattern": "hyphen", "replacement": "-" },

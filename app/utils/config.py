@@ -5,7 +5,7 @@ from dataclasses import dataclass
 class AppConfig:
     hotkey: str = "<ctrl>+<shift>+a"
     model_name: str = "small"
-    language: str = "en"
+    language: str | None = None
     sample_rate: int = 16000
     whisper_device: str = "cuda"
     whisper_compute_type: str = "float16"
@@ -14,7 +14,7 @@ class AppConfig:
 
     @property
     def template_path(self) -> str:
-        if self.language.lower() == "ru":
+        if self.language and self.language.lower() == "ru":
             return self.template_path_ru
         return self.template_path_en
 

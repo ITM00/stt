@@ -27,7 +27,7 @@ class TranscriptionService:
         model_loader: Any | None = None,
         *,
         sample_rate: int = 16000,
-        language: str | None = "en",
+        language: str | None = None,
         device: str = "cuda",
         compute_type: str = "float16",
     ) -> None:

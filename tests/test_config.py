@@ -6,6 +6,7 @@ def test_load_config_returns_defaults():
     assert isinstance(cfg, AppConfig)
     assert cfg.hotkey == AppConfig().hotkey
     assert cfg.model_name == "small"
+    assert cfg.language is None
     assert cfg.template_path == "app/templates/punctuation_signs_en.json"
 
 
