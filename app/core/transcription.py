@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
+
 from app.utils.logger import get_logger
 
 EN_TEMPLATE_PATH = "app/templates/punctuation_signs_en.json"
@@ -51,15 +52,40 @@ class TranscriptionService:
                 self.device,
                 self.compute_type,
             )
+            load_kwargs: dict[str, Any] = {
+                "device": self.device,
+                "compute_type": self.compute_type,
+            }
             try:
-                self._model = self._model_loader(
-                    self._model_name,
-                    device=self.device,
-                    compute_type=self.compute_type,
-                )
+                self._model = self._model_loader(self._model_name, **load_kwargs)
             except TypeError:
                 self._logger.info("Model loader does not accept device/compute_type kwargs")
                 self._model = self._model_loader(self._model_name)
+            except Exception:
+                self._logger.warning(
+                    "Primary model load failed, retrying with local_files_only cache mode",
+                    exc_info=True,
+                )
+                try:
+                    self._model = self._model_loader(
+                        self._model_name,
+                        **load_kwargs,
+                        local_files_only=True,
+                    )
+                except TypeError:
+                    self._logger.info(
+                        "Model loader does not accept local_files_only/device/compute_type kwargs"
+                    )
+                    try:
+                        self._model = self._model_loader(
+                            self._model_name,
+                            local_files_only=True,
+                        )
+                    except TypeError:
+                        self._logger.info(
+                            "Model loader does not accept local_files_only; retrying plain load"
+                        )
+                        self._model = self._model_loader(self._model_name)
         return self._model
 
     def _pcm16_bytes_to_float32(self, audio_bytes: bytes) -> np.ndarray:

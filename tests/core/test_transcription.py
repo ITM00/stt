@@ -67,3 +67,36 @@ def test_transcribe_calls_model_transcribe_with_float32_audio() -> None:
     assert captured_loader_kwargs["device"] == "cuda"
     assert captured_loader_kwargs["compute_type"] == "float16"
     assert result == TranscriptionResult(text="hello", template_path=EN_TEMPLATE_PATH)
+
+
+def test_transcribe_falls_back_to_local_files_only_when_online_check_fails() -> None:
+    class StubModel:
+        def transcribe(self, _audio, beam_size: int = 5, **kwargs):  # noqa: ANN001
+            assert beam_size == 5
+            assert kwargs.get("language") == "en"
+            return [type("Segment", (), {"text": "offline ok"})()], {}
+
+    calls: list[dict[str, object]] = []
+
+    def loader(_model_name: str, **kwargs):  # noqa: ANN001
+        calls.append(kwargs)
+        if kwargs.get("local_files_only") is True:
+            return StubModel()
+        raise RuntimeError("remote metadata check failed")
+
+    service = TranscriptionService(
+        model_loader=loader,
+        language="en",
+        device="cuda",
+        compute_type="float16",
+    )
+
+    result = service.transcribe(np.array([1, -1], dtype=np.int16).tobytes())
+
+    assert result == TranscriptionResult(text="offline ok", template_path=EN_TEMPLATE_PATH)
+    assert calls[0] == {"device": "cuda", "compute_type": "float16"}
+    assert calls[1] == {
+        "device": "cuda",
+        "compute_type": "float16",
+        "local_files_only": True,
+    }
