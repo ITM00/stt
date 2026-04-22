@@ -57,7 +57,7 @@ class TranscriptionOrchestrator:
         try:
             audio_bytes = self.recorder.stop()
             transcript = self.transcriber.transcribe(audio_bytes)
-            print(f"[faster-whisper raw] {transcript.text}", flush=True)
+            # print(f"[faster-whisper raw] {transcript.text}", flush=True)
             final_text = self.postprocessor.process(
                 transcript.text,
                 template_path=transcript.template_path,
