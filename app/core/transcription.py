@@ -30,6 +30,12 @@ class TranscriptionService:
         language: str | None = None,
         device: str = "cuda",
         compute_type: str = "float16",
+        minimal_normalization: bool = False,
+        decode_beam_size: int | None = None,
+        decode_best_of: int | None = None,
+        decode_temperature: float | None = None,
+        decode_condition_on_previous_text: bool | None = None,
+        decode_task: str = "transcribe",
     ) -> None:
         self._logger = get_logger(__name__)
         self._model_loader = model_loader
@@ -39,6 +45,43 @@ class TranscriptionService:
         self.language = language
         self.device = device
         self.compute_type = compute_type
+        self.minimal_normalization = minimal_normalization
+        self.decode_beam_size = decode_beam_size
+        self.decode_best_of = decode_best_of
+        self.decode_temperature = decode_temperature
+        self.decode_condition_on_previous_text = decode_condition_on_previous_text
+        self.decode_task = decode_task
+
+    def _decode_options(self) -> dict[str, Any]:
+        options: dict[str, Any] = {}
+
+        if self.minimal_normalization:
+            options["beam_size"] = (
+                self.decode_beam_size if self.decode_beam_size is not None else 1
+            )
+            options["best_of"] = self.decode_best_of if self.decode_best_of is not None else 1
+            options["temperature"] = (
+                self.decode_temperature if self.decode_temperature is not None else 0.0
+            )
+            options["condition_on_previous_text"] = (
+                self.decode_condition_on_previous_text
+                if self.decode_condition_on_previous_text is not None
+                else False
+            )
+        else:
+            options["beam_size"] = self.decode_beam_size if self.decode_beam_size is not None else 5
+            if self.decode_best_of is not None:
+                options["best_of"] = self.decode_best_of
+            if self.decode_temperature is not None:
+                options["temperature"] = self.decode_temperature
+            options["condition_on_previous_text"] = (
+                self.decode_condition_on_previous_text
+                if self.decode_condition_on_previous_text is not None
+                else True
+            )
+
+        options["task"] = self.decode_task
+        return options
 
     def _get_model(self) -> Any:
         if self._model_loader is None:
@@ -99,10 +142,10 @@ class TranscriptionService:
         model = self._get_model()
 
         if hasattr(model, "transcribe"):
-            kwargs: dict[str, Any] = {}
+            kwargs: dict[str, Any] = self._decode_options()
             if self.language:
                 kwargs["language"] = self.language
-            segments, _info = model.transcribe(audio, beam_size=5, **kwargs)
+            segments, _info = model.transcribe(audio, **kwargs)
         else:
             segments = model(audio_bytes)
 

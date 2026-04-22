@@ -100,3 +100,47 @@ def test_transcribe_falls_back_to_local_files_only_when_online_check_fails() -> 
         "compute_type": "float16",
         "local_files_only": True,
     }
+
+
+def test_transcribe_uses_minimal_normalization_decode_defaults() -> None:
+    class StubModel:
+        def transcribe(self, _audio, **kwargs):  # noqa: ANN001
+            assert kwargs["beam_size"] == 1
+            assert kwargs["best_of"] == 1
+            assert kwargs["temperature"] == 0.0
+            assert kwargs["condition_on_previous_text"] is False
+            assert kwargs["task"] == "transcribe"
+            return [type("Segment", (), {"text": "strict mode"})()], {}
+
+    service = TranscriptionService(
+        model_loader=lambda *_args, **_kwargs: StubModel(),
+        minimal_normalization=True,
+    )
+
+    result = service.transcribe(np.array([1, -1], dtype=np.int16).tobytes())
+
+    assert result == TranscriptionResult(text="strict mode", template_path=EN_TEMPLATE_PATH)
+
+
+def test_transcribe_allows_overriding_minimal_normalization_decode_options() -> None:
+    class StubModel:
+        def transcribe(self, _audio, **kwargs):  # noqa: ANN001
+            assert kwargs["beam_size"] == 3
+            assert kwargs["best_of"] == 2
+            assert kwargs["temperature"] == 0.2
+            assert kwargs["condition_on_previous_text"] is True
+            assert kwargs["task"] == "transcribe"
+            return [type("Segment", (), {"text": "custom strict"})()], {}
+
+    service = TranscriptionService(
+        model_loader=lambda *_args, **_kwargs: StubModel(),
+        minimal_normalization=True,
+        decode_beam_size=3,
+        decode_best_of=2,
+        decode_temperature=0.2,
+        decode_condition_on_previous_text=True,
+    )
+
+    result = service.transcribe(np.array([1, -1], dtype=np.int16).tobytes())
+
+    assert result == TranscriptionResult(text="custom strict", template_path=EN_TEMPLATE_PATH)
