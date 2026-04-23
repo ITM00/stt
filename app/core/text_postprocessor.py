@@ -57,8 +57,13 @@ class TextPostProcessor:
         return output
 
     def _apply_spoken_layout_commands(self, text: str) -> str:
-        # Convert spoken "new line" command to real line breaks for paste targets.
-        return re.sub(r"\s*\bnew\s*line\b\s*", "\n", text, flags=re.IGNORECASE)
+        # Convert spoken layout commands to real line breaks for paste targets.
+        return re.sub(
+            r"\s*(?:\bnew\s*line\b|\bновая\s*строка\b)\s*",
+            "\n",
+            text,
+            flags=re.IGNORECASE,
+        )
 
     def process(self, text: str, template_path: str | None = None) -> str:
         templates = self.templates
