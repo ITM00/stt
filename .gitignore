@@ -10,3 +10,4 @@ docs/operations/*
 
 test_setting.py
 logs/*
+.worktrees/

@@ -6,7 +6,9 @@ Desktop speech-to-text app for Windows that records from your microphone, transc
 
 - Runs as a desktop app (`PySide6`) with a small status UI.
 - Uses a global hotkey (default: `Ctrl+Shift+A`) to start/stop recording.
-- Supports tray `Settings` for silence auto-stop behavior (threshold + timeout), persisted across restarts.
+- Supports tray `Settings` for:
+  - silence auto-stop behavior (threshold + timeout), persisted across restarts
+  - record toggle hotkey (global start/stop shortcut), persisted across restarts
 - Transcribes audio with `faster-whisper` (`small` model by default).
 - Applies regex templates to normalize punctuation and optional "dev dialect" formatting.
 - Auto-detects transcript language (Cyrillic vs Latin) to choose RU/EN text templates.
@@ -31,6 +33,14 @@ Desktop speech-to-text app for Windows that records from your microphone, transc
   - `Silence timeout`: `3.0s`
 - You can change both values from tray menu: right-click tray icon -> `Settings`.
 - Settings are saved to:
+  - `%APPDATA%/stt-desktop/settings.json` (Windows)
+
+### Configurable record hotkey
+
+- You can change the global start/stop hotkey from tray menu: right-click tray icon -> `Settings`.
+- In the hotkey field, click once and press the desired key combination; the field captures the combo and replaces the previous value.
+- New hotkey is applied immediately after pressing `Save` (app restart is not required).
+- Hotkey value is persisted in the same settings file:
   - `%APPDATA%/stt-desktop/settings.json` (Windows)
 
 ## Prerequisites

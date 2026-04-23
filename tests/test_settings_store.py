@@ -13,7 +13,11 @@ def test_load_defaults_when_file_missing(tmp_path) -> None:
 
 def test_save_and_load_round_trip(tmp_path) -> None:
     path = tmp_path / "settings.json"
-    expected = UserSettings(silence_threshold_db=42.5, silence_timeout_seconds=2.25)
+    expected = UserSettings(
+        silence_threshold_db=42.5,
+        silence_timeout_seconds=2.25,
+        record_toggle_hotkey="ctrl+shift+space",
+    )
     save_user_settings(expected, path=path)
     loaded = load_user_settings(path=path)
     assert loaded == expected
@@ -35,6 +39,13 @@ def test_load_clamps_out_of_range_values(tmp_path) -> None:
     loaded = load_user_settings(path=path)
     assert loaded.silence_threshold_db == 100.0
     assert loaded.silence_timeout_seconds == 0.1
+
+
+def test_load_invalid_hotkey_falls_back_to_default(tmp_path) -> None:
+    path = tmp_path / "settings.json"
+    path.write_text('{"record_toggle_hotkey": "   "}', encoding="utf-8")
+    loaded = load_user_settings(path=path)
+    assert loaded.record_toggle_hotkey == UserSettings().record_toggle_hotkey
 
 
 def test_apply_user_settings_updates_recorder_fields() -> None:

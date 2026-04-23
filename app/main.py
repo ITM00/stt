@@ -55,7 +55,38 @@ def create_app(
 
     recorder = AudioRecorder(sample_rate=config.sample_rate)
     user_settings = load_user_settings()
+    if not user_settings.record_toggle_hotkey.strip():
+        user_settings.record_toggle_hotkey = config.hotkey
     apply_user_settings(recorder, user_settings)
+
+    hotkeys = hotkey_manager or HotkeyManager(listener_factory=hotkey_listener_factory)
+
+    bridge = HotkeyBridge()
+
+    def run_toggle() -> None:
+        logger.info("Running toggle on Qt main thread")
+        try:
+            orchestrator.toggle_recording()
+        except Exception:
+            logger.exception("toggle_recording failed")
+
+    bridge.toggle_requested.connect(run_toggle, Qt.ConnectionType.QueuedConnection)
+
+    def toggle_on_main_thread() -> None:
+        logger.info("Global hotkey callback received")
+        bridge.toggle_requested.emit()
+
+    def register_hotkey(hotkey_value: str) -> None:
+        normalized_hotkey = as_pynput_global_hotkey(hotkey_value)
+        logger.info(
+            "Registering global hotkey user=%s fallback=%s normalized=%s",
+            hotkey_value,
+            config.hotkey,
+            normalized_hotkey,
+        )
+        hotkeys.stop()
+        hotkeys.register(normalized_hotkey, toggle_on_main_thread)
+        logger.info("Global hotkey listener started")
 
     def open_settings() -> None:
         dialog = SettingsDialog(user_settings)
@@ -78,6 +109,13 @@ def create_app(
         apply_user_settings(recorder, updated)
         user_settings.silence_threshold_db = updated.silence_threshold_db
         user_settings.silence_timeout_seconds = updated.silence_timeout_seconds
+        effective_hotkey = updated.record_toggle_hotkey.strip() or config.hotkey
+        try:
+            register_hotkey(effective_hotkey)
+        except Exception:
+            logger.exception("Failed applying hotkey immediately; keeping current runtime hotkey")
+            return
+        user_settings.record_toggle_hotkey = effective_hotkey
 
     tray = TrayIconController(on_quit=qt_app.quit, on_settings=open_settings)
     status_sink = UiStatusSink(overlay=overlay, tray=tray)
@@ -100,31 +138,8 @@ def create_app(
         qt_parent=qt_app,
     )
 
-    hotkeys = hotkey_manager or HotkeyManager(listener_factory=hotkey_listener_factory)
-    normalized_hotkey = as_pynput_global_hotkey(config.hotkey)
-    logger.info(
-        "Registering global hotkey config=%s normalized=%s",
-        config.hotkey,
-        normalized_hotkey,
-    )
-
-    bridge = HotkeyBridge()
-
-    def run_toggle() -> None:
-        logger.info("Running toggle on Qt main thread")
-        try:
-            orchestrator.toggle_recording()
-        except Exception:
-            logger.exception("toggle_recording failed")
-
-    bridge.toggle_requested.connect(run_toggle, Qt.ConnectionType.QueuedConnection)
-
-    def toggle_on_main_thread() -> None:
-        logger.info("Global hotkey callback received")
-        bridge.toggle_requested.emit()
-
-    hotkeys.register(normalized_hotkey, toggle_on_main_thread)
-    logger.info("Global hotkey listener started")
+    effective_hotkey = user_settings.record_toggle_hotkey.strip() or config.hotkey
+    register_hotkey(effective_hotkey)
 
     overlay.show()
 

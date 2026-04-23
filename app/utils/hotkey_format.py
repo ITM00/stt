@@ -25,6 +25,9 @@ def as_pynput_global_hotkey(hotkey: str) -> str:
         if lower in {"alt"}:
             normalized.append("<alt>")
             continue
+        if lower in {"win", "meta", "cmd", "super"}:
+            normalized.append("<cmd>")
+            continue
 
         if len(part) == 1 and part.isalpha():
             normalized.append(part.lower())

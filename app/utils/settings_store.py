@@ -18,6 +18,7 @@ _SETTINGS_FILENAME = "settings.json"
 class UserSettings:
     silence_threshold_db: float = 30.0
     silence_timeout_seconds: float = 3.0
+    record_toggle_hotkey: str = "<ctrl>+<shift>+a"
 
 
 def _default_settings_path() -> Path:
@@ -31,6 +32,7 @@ def _sanitize_payload(payload: dict[str, Any]) -> UserSettings:
     defaults = UserSettings()
     threshold = payload.get("silence_threshold_db", defaults.silence_threshold_db)
     timeout = payload.get("silence_timeout_seconds", defaults.silence_timeout_seconds)
+    hotkey = payload.get("record_toggle_hotkey", defaults.record_toggle_hotkey)
     try:
         threshold = float(threshold)
     except (TypeError, ValueError):
@@ -42,7 +44,16 @@ def _sanitize_payload(payload: dict[str, Any]) -> UserSettings:
 
     threshold = max(0.0, min(100.0, threshold))
     timeout = max(0.1, min(30.0, timeout))
-    return UserSettings(silence_threshold_db=threshold, silence_timeout_seconds=timeout)
+    if not isinstance(hotkey, str):
+        hotkey = defaults.record_toggle_hotkey
+    hotkey = hotkey.strip()
+    if not hotkey:
+        hotkey = defaults.record_toggle_hotkey
+    return UserSettings(
+        silence_threshold_db=threshold,
+        silence_timeout_seconds=timeout,
+        record_toggle_hotkey=hotkey,
+    )
 
 
 def load_user_settings(path: Path | None = None) -> UserSettings:
