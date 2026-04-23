@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import sys
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 from PySide6.QtCore import QObject, Qt, QTimer, Signal
-from PySide6.QtGui import QCursor
+from PySide6.QtGui import QCursor, QIcon
 from PySide6.QtWidgets import QApplication
 
 from app.core.audio_recorder import AudioRecorder
@@ -50,6 +51,10 @@ def create_app(
         qt_app = instance
     else:
         qt_app = QApplication([])
+    app_icon_path = Path(__file__).resolve().parent / "ui" / "icons" / "stt_icon_48.png"
+    app_icon = QIcon(str(app_icon_path))
+    if not app_icon.isNull():
+        qt_app.setWindowIcon(app_icon)
 
     config = load_config()
     overlay = OverlayIndicator()

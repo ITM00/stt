@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 
 from PySide6.QtCore import Property, QEasingCurve, QEvent, QPropertyAnimation, Qt
-from PySide6.QtGui import QColor, QKeyEvent, QKeySequence, QMouseEvent, QPainter
+from PySide6.QtGui import QColor, QIcon, QKeyEvent, QKeySequence, QMouseEvent, QPainter
 from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
@@ -227,6 +228,10 @@ class SettingsDialog(QDialog):
     def __init__(self, settings: UserSettings, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Settings")
+        icon_path = Path(__file__).with_name("icons") / "stt_icon_24.png"
+        icon = QIcon(str(icon_path))
+        if not icon.isNull():
+            self.setWindowIcon(icon)
         self._widgets: dict[str, QDoubleSpinBox] = {}
         self._hotkey_input = HotkeyCaptureLineEdit(self)
         self._auto_paste_checkbox = SwitchCheckBox(self)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from pathlib import Path
 
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QApplication, QMenu, QStyle, QSystemTrayIcon
@@ -32,6 +33,10 @@ class TrayIconController:
         self.tray.setVisible(True)
 
     def _resolve_icon(self, app: QApplication) -> QIcon:
+        icon_path = Path(__file__).with_name("icons") / "stt_icon_32.png"
+        icon = QIcon(str(icon_path))
+        if not icon.isNull():
+            return icon
         icon = app.style().standardIcon(QStyle.StandardPixmap.SP_MediaPlay)
         if icon.isNull():
             return QIcon()
