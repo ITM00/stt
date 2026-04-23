@@ -56,6 +56,10 @@ class TextPostProcessor:
             )
         return output
 
+    def _apply_spoken_layout_commands(self, text: str) -> str:
+        # Convert spoken "new line" command to real line breaks for paste targets.
+        return re.sub(r"\s*\bnew\s*line\b\s*", "\n", text, flags=re.IGNORECASE)
+
     def process(self, text: str, template_path: str | None = None) -> str:
         templates = self.templates
         if template_path is not None and template_path != self.template_path:
@@ -63,6 +67,7 @@ class TextPostProcessor:
 
         output = self._apply_templates(text, templates)
         output = self._apply_templates(output, self.dev_dialect_templates)
+        output = self._apply_spoken_layout_commands(output)
         return output.strip()
 
     def _format_dev_dialect(self, match: Match[str]) -> str:

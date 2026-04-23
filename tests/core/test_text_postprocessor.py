@@ -31,6 +31,20 @@ def test_patterns_are_applied_case_insensitively(tmp_path):
     assert processor.process("TEH quick") == "the quick"
 
 
+def test_spoken_new_line_becomes_actual_line_break(tmp_path):
+    templates = tmp_path / "templates.json"
+    templates.write_text("[]", encoding="utf-8")
+    processor = TextPostProcessor(str(templates))
+    assert processor.process("hello new line world") == "hello\nworld"
+
+
+def test_spoken_newline_becomes_actual_line_break(tmp_path):
+    templates = tmp_path / "templates.json"
+    templates.write_text("[]", encoding="utf-8")
+    processor = TextPostProcessor(str(templates))
+    assert processor.process("hello newline world") == "hello\nworld"
+
+
 def test_dev_dialect_matches_any_separator_and_joins_with_backslashes(tmp_path):
     templates = tmp_path / "templates.json"
     templates.write_text(
