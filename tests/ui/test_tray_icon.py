@@ -15,3 +15,16 @@ def test_tray_tooltip_reflects_state() -> None:
 
     assert tray.current_state == "processing"
     assert "PROCESSING" in tray.tray.toolTip()
+
+
+def test_tray_settings_action_triggers_callback() -> None:
+    _ensure_app()
+    calls = {"count": 0}
+
+    def on_settings() -> None:
+        calls["count"] += 1
+
+    tray = TrayIconController(on_settings=on_settings)
+    action = next(a for a in tray.menu.actions() if a.text() == "Settings")
+    action.trigger()
+    assert calls["count"] == 1

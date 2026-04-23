@@ -14,7 +14,7 @@ def test_overlay_updates_visual_state() -> None:
     overlay.set_state("idle")
     initial_size = overlay.size()
 
-    assert "#008000" in overlay.styleSheet().lower()
+    assert overlay.palette().color(overlay.backgroundRole()).name().lower() == "#008000"
     assert overlay.label.alignment() & Qt.AlignmentFlag.AlignCenter
 
     overlay.set_state("recording")
@@ -23,7 +23,7 @@ def test_overlay_updates_visual_state() -> None:
     assert overlay.label.text() == "RECORDING"
     assert overlay.windowFlags() & Qt.WindowType.WindowStaysOnTopHint
     assert overlay.windowFlags() & Qt.WindowType.FramelessWindowHint
-    assert "#ff0000" in overlay.styleSheet().lower()
+    assert overlay.palette().color(overlay.backgroundRole()).name().lower() == "#ff0000"
 
     overlay.set_state("processing")
     assert overlay.label.text() == "PROCESSING"

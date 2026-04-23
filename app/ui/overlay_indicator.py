@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import QPoint, QRect, Qt
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtGui import QColor, QGuiApplication, QPalette
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 
@@ -10,10 +10,10 @@ class OverlayIndicator(QWidget):
     _WINDOW_PADDING_Y = 8
     _BOTTOM_MARGIN = 24
     _STATE_LABELS = ("IDLE", "RECORDING", "PROCESSING")
-    _STYLE_BY_STATE = {
-        "idle": "background-color: #008000; color: #ffffff;",
-        "recording": "background-color: #ff0000; color: #ffffff;",
-        "processing": "background-color: #273c75; color: #ffffff;",
+    _COLORS_BY_STATE = {
+        "idle": QColor("#008000"),
+        "recording": QColor("#ff0000"),
+        "processing": QColor("#273c75"),
     }
 
     def __init__(self) -> None:
@@ -22,6 +22,7 @@ class OverlayIndicator(QWidget):
         self.setWindowTitle("STT Status")
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
         self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
+        self.setAutoFillBackground(True)
         self.label = QLabel("READY", self)
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -46,7 +47,12 @@ class OverlayIndicator(QWidget):
     def set_state(self, state: str) -> None:
         self.current_state = state
         self.label.setText(state.upper())
-        self.setStyleSheet(self._STYLE_BY_STATE.get(state, self._STYLE_BY_STATE["idle"]))
+        bg_color = self._COLORS_BY_STATE.get(state, self._COLORS_BY_STATE["idle"])
+        palette = self.palette()
+        palette.setColor(QPalette.ColorRole.Window, bg_color)
+        palette.setColor(QPalette.ColorRole.WindowText, QColor("#ffffff"))
+        self.setPalette(palette)
+        self.label.setPalette(palette)
 
     def _bottom_center_position(self, screen_geometry: QRect) -> QPoint:
         x = screen_geometry.x() + (screen_geometry.width() - self.width()) // 2

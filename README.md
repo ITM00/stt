@@ -6,6 +6,7 @@ Desktop speech-to-text app for Windows that records from your microphone, transc
 
 - Runs as a desktop app (`PySide6`) with a small status UI.
 - Uses a global hotkey (default: `Ctrl+Shift+A`) to start/stop recording.
+- Supports tray `Settings` for silence auto-stop behavior (threshold + timeout), persisted across restarts.
 - Transcribes audio with `faster-whisper` (`small` model by default).
 - Applies regex templates to normalize punctuation and optional "dev dialect" formatting.
 - Auto-detects transcript language (Cyrillic vs Latin) to choose RU/EN text templates.
@@ -16,10 +17,21 @@ Desktop speech-to-text app for Windows that records from your microphone, transc
 1. App starts from `app.main`.
 2. Hotkey is registered via `pynput`.
 3. First hotkey press starts microphone capture (`sounddevice`).
-4. Second hotkey press stops capture and sends audio to a background worker thread.
+4. Recording stops either by second hotkey press or automatically after sustained silence.
 5. Worker transcribes audio using `faster-whisper`/`ctranslate2`.
 6. Postprocessor applies template rules from `app/templates/*.json`.
 7. Final text is copied to clipboard (`pyperclip`), state returns to `idle`.
+
+### Silence auto-stop behavior
+
+- While recording, input level is tracked continuously.
+- If level stays below the configured threshold for the configured timeout, the app auto-continues to processing.
+- Defaults:
+  - `Silence threshold`: `30 dB` (app-relative scale)
+  - `Silence timeout`: `3.0s`
+- You can change both values from tray menu: right-click tray icon -> `Settings`.
+- Settings are saved to:
+  - `%APPDATA%/stt-desktop/settings.json` (Windows)
 
 ## Prerequisites
 
@@ -109,7 +121,9 @@ Current defaults are defined in `app/utils/config.py`:
 - device: `cuda`
 - compute type: `float16`
 
-You can edit those values directly in `AppConfig` for now.
+For silence auto-stop defaults and persistence:
+- Runtime values are managed in `app/utils/settings_store.py`
+- UI editor is in tray menu (`Settings`)
 
 ## Project structure (main parts)
 
@@ -118,6 +132,7 @@ You can edit those values directly in `AppConfig` for now.
 - `app/core/transcription.py` - model loading and transcription.
 - `app/core/text_postprocessor.py` - regex template processing.
 - `app/core/orchestrator.py` - state machine and background processing.
-- `app/ui/` - overlay, tray icon, and main window.
+- `app/ui/` - overlay, tray icon, and settings dialog.
+- `app/utils/settings_store.py` - persisted user settings (silence threshold/timeout).
 - `app/templates/` - text replacement rules.
 

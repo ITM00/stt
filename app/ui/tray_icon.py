@@ -7,7 +7,11 @@ from PySide6.QtWidgets import QApplication, QMenu, QStyle, QSystemTrayIcon
 
 
 class TrayIconController:
-    def __init__(self, on_quit: Callable[[], None] | None = None) -> None:
+    def __init__(
+        self,
+        on_quit: Callable[[], None] | None = None,
+        on_settings: Callable[[], None] | None = None,
+    ) -> None:
         app = QApplication.instance()
         if app is None:
             raise RuntimeError("QApplication must be created before TrayIconController")
@@ -17,6 +21,10 @@ class TrayIconController:
         self.tray.setToolTip("STT Desktop - IDLE")
 
         self.menu = QMenu()
+        settings_action = QAction("Settings", self.menu)
+        settings_action.triggered.connect(on_settings or (lambda: None))
+        self.menu.addAction(settings_action)
+
         quit_action = QAction("Quit", self.menu)
         quit_action.triggered.connect(on_quit or app.quit)
         self.menu.addAction(quit_action)

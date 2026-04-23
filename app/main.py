@@ -4,7 +4,8 @@ import sys
 from collections.abc import Callable
 from typing import Any
 
-from PySide6.QtCore import QObject, Qt, Signal
+from PySide6.QtCore import QObject, Qt, QTimer, Signal
+from PySide6.QtGui import QCursor
 from PySide6.QtWidgets import QApplication
 
 from app.core.audio_recorder import AudioRecorder
@@ -13,12 +14,13 @@ from app.core.hotkey_manager import HotkeyManager
 from app.core.orchestrator import TranscriptionOrchestrator
 from app.core.text_postprocessor import TextPostProcessor
 from app.core.transcription import TranscriptionService
-from app.ui.main_window import MainWindow
 from app.ui.overlay_indicator import OverlayIndicator
+from app.ui.settings_dialog import SettingsDialog
 from app.ui.tray_icon import TrayIconController
 from app.utils.config import load_config
 from app.utils.hotkey_format import as_pynput_global_hotkey
 from app.utils.logger import get_logger
+from app.utils.settings_store import apply_user_settings, load_user_settings, save_user_settings
 
 logger = get_logger(__name__)
 
@@ -50,11 +52,36 @@ def create_app(
 
     config = load_config()
     overlay = OverlayIndicator()
-    tray = TrayIconController(on_quit=qt_app.quit)
-    status_sink = UiStatusSink(overlay=overlay, tray=tray)
-    main_window = MainWindow(config)
 
     recorder = AudioRecorder(sample_rate=config.sample_rate)
+    user_settings = load_user_settings()
+    apply_user_settings(recorder, user_settings)
+
+    def open_settings() -> None:
+        dialog = SettingsDialog(user_settings)
+        dialog.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
+        anchor = tray.tray.geometry().center()
+        if anchor.isNull():
+            anchor = QCursor.pos()
+        dialog.adjustSize()
+        dialog.move(anchor.x() - dialog.width() // 2, anchor.y() - dialog.height() // 2)
+        QTimer.singleShot(0, dialog.raise_)
+        QTimer.singleShot(0, dialog.activateWindow)
+        if dialog.exec() != dialog.DialogCode.Accepted:
+            return
+        updated = dialog.values()
+        try:
+            save_user_settings(updated)
+        except Exception:
+            logger.exception("Failed to save user settings; keeping current runtime settings")
+            return
+        apply_user_settings(recorder, updated)
+        user_settings.silence_threshold_db = updated.silence_threshold_db
+        user_settings.silence_timeout_seconds = updated.silence_timeout_seconds
+
+    tray = TrayIconController(on_quit=qt_app.quit, on_settings=open_settings)
+    status_sink = UiStatusSink(overlay=overlay, tray=tray)
+
     transcriber = TranscriptionService(
         model_name=config.model_name,
         sample_rate=config.sample_rate,
@@ -100,12 +127,12 @@ def create_app(
     logger.info("Global hotkey listener started")
 
     overlay.show()
-    main_window.show()
 
     qt_app.aboutToQuit.connect(tray.tray.hide)
     qt_app.aboutToQuit.connect(hotkeys.stop)
     # Keep QObject alive for queued signal delivery.
     qt_app._hotkey_bridge = bridge  # type: ignore[attr-defined]
+    qt_app._open_settings = open_settings  # type: ignore[attr-defined]
     return qt_app, orchestrator, hotkeys
 
 
