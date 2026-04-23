@@ -17,12 +17,14 @@ def test_dialog_loads_initial_values() -> None:
             silence_threshold_db=31.0,
             silence_timeout_seconds=2.0,
             record_toggle_hotkey="ctrl+shift+z",
+            auto_paste_enabled=True,
         )
     )
     values = dialog.values()
     assert values.silence_threshold_db == 31.0
     assert values.silence_timeout_seconds == 2.0
     assert values.record_toggle_hotkey == "ctrl+shift+z"
+    assert values.auto_paste_enabled is True
 
 
 def test_dialog_values_reflect_user_edits() -> None:
@@ -31,10 +33,12 @@ def test_dialog_values_reflect_user_edits() -> None:
     dialog._widgets["silence_threshold_db"].setValue(45.0)
     dialog._widgets["silence_timeout_seconds"].setValue(1.75)
     dialog._hotkey_input.setText("alt+space")
+    dialog._auto_paste_checkbox.setChecked(True)
     values = dialog.values()
     assert values.silence_threshold_db == 45.0
     assert values.silence_timeout_seconds == 1.75
     assert values.record_toggle_hotkey == "alt+space"
+    assert values.auto_paste_enabled is True
 
 
 def test_hotkey_input_captures_and_rewrites_combo() -> None:

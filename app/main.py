@@ -12,6 +12,7 @@ from app.core.audio_recorder import AudioRecorder
 from app.core.clipboard_manager import ClipboardManager
 from app.core.hotkey_manager import HotkeyManager
 from app.core.orchestrator import TranscriptionOrchestrator
+from app.core.paste_manager import PasteManager
 from app.core.text_postprocessor import TextPostProcessor
 from app.core.transcription import TranscriptionService
 from app.ui.overlay_indicator import OverlayIndicator
@@ -109,6 +110,8 @@ def create_app(
         apply_user_settings(recorder, updated)
         user_settings.silence_threshold_db = updated.silence_threshold_db
         user_settings.silence_timeout_seconds = updated.silence_timeout_seconds
+        user_settings.auto_paste_enabled = updated.auto_paste_enabled
+        orchestrator.auto_paste_enabled = updated.auto_paste_enabled
         effective_hotkey = updated.record_toggle_hotkey.strip() or config.hotkey
         try:
             register_hotkey(effective_hotkey)
@@ -129,12 +132,15 @@ def create_app(
     )
     postprocessor = TextPostProcessor(template_path=config.template_path)
     clipboard = ClipboardManager()
+    paste_manager = PasteManager()
     orchestrator = TranscriptionOrchestrator(
         recorder=recorder,
         transcriber=transcriber,
         postprocessor=postprocessor,
         clipboard=clipboard,
+        paste_manager=paste_manager,
         status_sink=status_sink,
+        auto_paste_enabled=user_settings.auto_paste_enabled,
         qt_parent=qt_app,
     )
 

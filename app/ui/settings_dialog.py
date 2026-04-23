@@ -3,9 +3,10 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass
 
-from PySide6.QtCore import QEvent, Qt
-from PySide6.QtGui import QKeyEvent, QKeySequence, QMouseEvent
+from PySide6.QtCore import Property, QEasingCurve, QEvent, QPropertyAnimation, Qt
+from PySide6.QtGui import QColor, QKeyEvent, QKeySequence, QMouseEvent, QPainter
 from PySide6.QtWidgets import (
+    QCheckBox,
     QDialog,
     QDialogButtonBox,
     QDoubleSpinBox,
@@ -38,7 +39,7 @@ class HotkeyCaptureLineEdit(QLineEdit):
         Qt.Key.Key_Super_R,
     }
 
-    _SPECIAL_KEYS = {
+    _SPECIAL_KEYS: dict[int, str] = {
         Qt.Key.Key_Space: "Space",
         Qt.Key.Key_Tab: "Tab",
         Qt.Key.Key_Return: "Enter",
@@ -152,6 +153,71 @@ class HotkeyCaptureLineEdit(QLineEdit):
             return 0
 
 
+class SwitchCheckBox(QCheckBox):
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setText("")
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setFixedSize(38, 20)
+
+        self._thumb_margin = 2.0
+        self._thumb_diameter = 16.0
+        self._thumb_pos = self._thumb_margin
+        self._bg_off = QColor("#9AA0A6")
+        self._bg_on = QColor("#2D9CDB")
+        self._thumb_color = QColor("#FFFFFF")
+
+        self._animation = QPropertyAnimation(self, b"thumb_pos", self)
+        self._animation.setDuration(140)
+        self._animation.setEasingCurve(QEasingCurve.Type.InOutCubic)
+        self.stateChanged.connect(self._start_transition)
+
+    def _get_thumb_pos(self) -> float:
+        return self._thumb_pos
+
+    def _set_thumb_pos(self, value: float) -> None:
+        self._thumb_pos = value
+        self.update()
+
+    thumb_pos = Property(float, _get_thumb_pos, _set_thumb_pos)
+
+    def _thumb_range(self) -> tuple[float, float]:
+        min_pos = self._thumb_margin
+        max_pos = self.width() - self._thumb_diameter - self._thumb_margin
+        return min_pos, max_pos
+
+    def _start_transition(self, _state: int) -> None:
+        min_pos, max_pos = self._thumb_range()
+        self._animation.stop()
+        self._animation.setStartValue(self._thumb_pos)
+        self._animation.setEndValue(max_pos if self.isChecked() else min_pos)
+        self._animation.start()
+
+    def resizeEvent(self, event) -> None:  # noqa: N802
+        super().resizeEvent(event)
+        min_pos, max_pos = self._thumb_range()
+        self._thumb_pos = max_pos if self.isChecked() else min_pos
+
+    def paintEvent(self, event) -> None:  # noqa: N802
+        _ = event
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+
+        radius = self.height() / 2
+        background = self._bg_on if self.isChecked() else self._bg_off
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(background)
+        painter.drawRoundedRect(self.rect(), radius, radius)
+
+        painter.setBrush(self._thumb_color)
+        painter.drawEllipse(
+            int(self._thumb_pos),
+            int(self._thumb_margin),
+            int(self._thumb_diameter),
+            int(self._thumb_diameter),
+        )
+
+
 class SettingsDialog(QDialog):
     _FIELDS = (
         _FieldDescriptor("silence_threshold_db", "Silence threshold (dB)", 0.0, 100.0, 1.0, 1),
@@ -163,6 +229,7 @@ class SettingsDialog(QDialog):
         self.setWindowTitle("Settings")
         self._widgets: dict[str, QDoubleSpinBox] = {}
         self._hotkey_input = HotkeyCaptureLineEdit(self)
+        self._auto_paste_checkbox = SwitchCheckBox(self)
 
         root = QVBoxLayout(self)
         form = QFormLayout()
@@ -178,9 +245,14 @@ class SettingsDialog(QDialog):
         self._hotkey_input.setText(settings.record_toggle_hotkey)
         self._hotkey_input.setPlaceholderText("Example: Ctrl+Shift+A")
         form.addRow("Record toggle hotkey", self._hotkey_input)
+        self._auto_paste_checkbox.setChecked(settings.auto_paste_enabled)
+        form.addRow("Auto-paste after transcription", self._auto_paste_checkbox)
         root.addLayout(form)
 
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel, self)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel,
+            self,
+        )
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         root.addWidget(buttons)
@@ -190,4 +262,5 @@ class SettingsDialog(QDialog):
             silence_threshold_db=self._widgets["silence_threshold_db"].value(),
             silence_timeout_seconds=self._widgets["silence_timeout_seconds"].value(),
             record_toggle_hotkey=self._hotkey_input.text().strip(),
+            auto_paste_enabled=self._auto_paste_checkbox.isChecked(),
         )

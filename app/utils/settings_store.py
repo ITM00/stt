@@ -19,6 +19,7 @@ class UserSettings:
     silence_threshold_db: float = 30.0
     silence_timeout_seconds: float = 3.0
     record_toggle_hotkey: str = "<ctrl>+<shift>+a"
+    auto_paste_enabled: bool = False
 
 
 def _default_settings_path() -> Path:
@@ -33,6 +34,7 @@ def _sanitize_payload(payload: dict[str, Any]) -> UserSettings:
     threshold = payload.get("silence_threshold_db", defaults.silence_threshold_db)
     timeout = payload.get("silence_timeout_seconds", defaults.silence_timeout_seconds)
     hotkey = payload.get("record_toggle_hotkey", defaults.record_toggle_hotkey)
+    auto_paste_enabled = payload.get("auto_paste_enabled", defaults.auto_paste_enabled)
     try:
         threshold = float(threshold)
     except (TypeError, ValueError):
@@ -49,10 +51,13 @@ def _sanitize_payload(payload: dict[str, Any]) -> UserSettings:
     hotkey = hotkey.strip()
     if not hotkey:
         hotkey = defaults.record_toggle_hotkey
+    if not isinstance(auto_paste_enabled, bool):
+        auto_paste_enabled = defaults.auto_paste_enabled
     return UserSettings(
         silence_threshold_db=threshold,
         silence_timeout_seconds=timeout,
         record_toggle_hotkey=hotkey,
+        auto_paste_enabled=auto_paste_enabled,
     )
 
 

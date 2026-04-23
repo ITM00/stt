@@ -17,6 +17,7 @@ def test_save_and_load_round_trip(tmp_path) -> None:
         silence_threshold_db=42.5,
         silence_timeout_seconds=2.25,
         record_toggle_hotkey="ctrl+shift+space",
+        auto_paste_enabled=True,
     )
     save_user_settings(expected, path=path)
     loaded = load_user_settings(path=path)
@@ -46,6 +47,13 @@ def test_load_invalid_hotkey_falls_back_to_default(tmp_path) -> None:
     path.write_text('{"record_toggle_hotkey": "   "}', encoding="utf-8")
     loaded = load_user_settings(path=path)
     assert loaded.record_toggle_hotkey == UserSettings().record_toggle_hotkey
+
+
+def test_load_invalid_auto_paste_value_falls_back_to_default(tmp_path) -> None:
+    path = tmp_path / "settings.json"
+    path.write_text('{"auto_paste_enabled": "yes"}', encoding="utf-8")
+    loaded = load_user_settings(path=path)
+    assert loaded.auto_paste_enabled is UserSettings().auto_paste_enabled
 
 
 def test_apply_user_settings_updates_recorder_fields() -> None:

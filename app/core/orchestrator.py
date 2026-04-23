@@ -20,8 +20,10 @@ class TranscriptionOrchestrator:
         transcriber,
         postprocessor,
         clipboard,
+        paste_manager,
         status_sink,
         *,
+        auto_paste_enabled: bool = False,
         qt_parent: QObject | None = None,
     ) -> None:
         self._logger = get_logger(__name__)
@@ -29,7 +31,9 @@ class TranscriptionOrchestrator:
         self.transcriber = transcriber
         self.postprocessor = postprocessor
         self.clipboard = clipboard
+        self.paste_manager = paste_manager
         self.status_sink = status_sink
+        self.auto_paste_enabled = auto_paste_enabled
         self.state = "idle"
         self._state_lock = Lock()
         self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="stt-worker")
@@ -43,6 +47,8 @@ class TranscriptionOrchestrator:
         self._logger.info("toggle_recording called state=%s", self.state)
         with self._state_lock:
             if self.state == "idle":
+                if self.auto_paste_enabled:
+                    self.paste_manager.capture_recording_target()
                 self.recorder.start(on_silence_timeout=self._on_silence_timeout)
                 self.state = "recording"
                 self.status_sink.update("recording")
@@ -87,6 +93,8 @@ class TranscriptionOrchestrator:
 
     def _finish_success(self, final_text: str, template_path: str) -> None:
         self.clipboard.copy_text(final_text)
+        if self.auto_paste_enabled:
+            self.paste_manager.paste_to_target_or_active()
         self.state = "idle"
         self.status_sink.update("idle")
         self._logger.info(
