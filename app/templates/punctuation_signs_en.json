@@ -1,40 +1,222 @@
 [
-    { "pattern": "open paren", "replacement": "(" },
-    { "pattern": "close paren", "replacement": ")" },
-    { "pattern": "open bracket", "replacement": "[" },
-    { "pattern": "close bracket", "replacement": "]" },
-    { "pattern": "open brace", "replacement": "{" },
-    { "pattern": "close brace", "replacement": "}" },
-    { "pattern": "period", "replacement": "." },
-    { "pattern": "dot", "replacement": "." },
-    { "pattern": "comma", "replacement": "," },
-    { "pattern": "colon", "replacement": ":" },
-    { "pattern": "semicolon", "replacement": ";" },
-    { "pattern": "question mark", "replacement": "?" },
-    { "pattern": "exclamation mark", "replacement": "!" },
-    { "pattern": "apostrophe", "replacement": "'" },
-    { "pattern": "single quote", "replacement": "'" },
-    { "pattern": "double quote", "replacement": "\"" },
-    { "pattern": "quotation mark", "replacement": "\"" },
-    { "pattern": "ellipsis", "replacement": "…" },
-    { "pattern": "hyphen", "replacement": "-" },
-    { "pattern": "dash", "replacement": "—" },
-    { "pattern": "underscore", "replacement": "_" },
-    { "pattern": "dunder", "replacement": "__" },
-    { "pattern": "double underscore", "replacement": "__" },
-    { "pattern": "forward slash", "replacement": "/" },
-    { "pattern": "backslash", "replacement": "\\" },
-    { "pattern": "vertical bar", "replacement": "|" },
-    { "pattern": "at sign", "replacement": "@" },
-    { "pattern": "hash", "replacement": "#" },
-    { "pattern": "percent", "replacement": "%" },
-    { "pattern": "caret", "replacement": "^" },
-    { "pattern": "ampersand", "replacement": "&" },
-    { "pattern": "asterisk", "replacement": "*" },
-    { "pattern": "plus", "replacement": "+" },
-    { "pattern": "equals", "replacement": "=" },
-    { "pattern": "less than", "replacement": "<" },
-    { "pattern": "greater than", "replacement": ">" },
-    { "pattern": "tilde", "replacement": "~" },
-    { "pattern": "grave accent", "replacement": "`" }
-  ]
+    {
+        "pattern": "\\bopen parenthesis\\b[^\\w]*",
+        "replacement": "("
+    },
+    {
+        "pattern": "\\bopen parentheses\\b[^\\w]*",
+        "replacement": "("
+    },
+    {
+        "pattern": "[^\\w]*\\bclose parenthesis\\b",
+        "replacement": ")"
+    },
+    {
+        "pattern": "[^\\w]*\\bclose parentheses\\b",
+        "replacement": ")"
+    },
+    {
+        "pattern": "\\bopen bracket\\b[^\\w]*",
+        "replacement": "["
+    },
+    {
+        "pattern": "\\bopen brackets\\b[^\\w]*",
+        "replacement": "["
+    },
+    {
+        "pattern": "[^\\w]*\\bclose bracket\\b",
+        "replacement": "]"
+    },
+    {
+        "pattern": "[^\\w]*\\bclose brackets\\b",
+        "replacement": "]"
+    },
+    {
+        "pattern": "\\bopen brace\\b[^\\w]*",
+        "replacement": "{"
+    },
+    {
+        "pattern": "\\bopen braces\\b[^\\w]*",
+        "replacement": "{"
+    },
+    {
+        "pattern": "[^\\w]*\\bclose brace\\b",
+        "replacement": "}"
+    },
+    {
+        "pattern": "[^\\w]*\\bclose braces\\b",
+        "replacement": "}"
+    },
+    {
+        "pattern": "[^\\w]*\\bperiod\\b[^\\w]*(?=\\w)",
+        "replacement": ". "
+    },
+    {
+        "pattern": "[^\\w]*\\bperiod\\b",
+        "replacement": "."
+    },
+    {
+        "pattern": "[^\\w]*\\bdot\\b[^\\w]*(?=\\w)",
+        "replacement": ". "
+    },
+    {
+        "pattern": "[^\\w]*\\bdot\\b",
+        "replacement": "."
+    },
+    {
+        "pattern": "[^\\w]*\\bcomma\\b[^\\w]*(?=\\w)",
+        "replacement": ", "
+    },
+    {
+        "pattern": "[^\\w]*\\bcomma\\b",
+        "replacement": ","
+    },
+    {
+        "pattern": "[^\\w]*\\bcolon\\b[^\\w]*(?=\\w)",
+        "replacement": ": "
+    },
+    {
+        "pattern": "[^\\w]*\\bcolon\\b",
+        "replacement": ":"
+    },
+    {
+        "pattern": "[^\\w]*\\bsemicolon\\b[^\\w]*(?=\\w)",
+        "replacement": "; "
+    },
+    {
+        "pattern": "[^\\w]*\\bsemicolon\\b",
+        "replacement": ";"
+    },
+    {
+        "pattern": "[^\\w]*\\bquestion mark\\b[^\\w]*(?=\\w)",
+        "replacement": "? "
+    },
+    {
+        "pattern": "[^\\w]*\\bquestion mark\\b",
+        "replacement": "?"
+    },
+    {
+        "pattern": "[^\\w]*\\bexclamation mark\\b[^\\w]*(?=\\w)",
+        "replacement": "! "
+    },
+    {
+        "pattern": "[^\\w]*\\bexclamation mark\\b",
+        "replacement": "!"
+    },
+    {
+        "pattern": "apostrophe",
+        "replacement": "'"
+    },
+    {
+        "pattern": "\\bsingle quote\\b",
+        "replacement": "'"
+    },
+    {
+        "pattern": "\\bdouble quote\\b",
+        "replacement": "\""
+    },
+    {
+        "pattern": "\\bquotation mark\\b",
+        "replacement": "\""
+    },
+    {
+        "pattern": "[^\\w]*\\bellipsis\\b[^\\w]*(?=\\w)",
+        "replacement": "\u2026 "
+    },
+    {
+        "pattern": "[^\\w]*\\bellipsis\\b",
+        "replacement": "\u2026"
+    },
+    {
+        "pattern": "\\bhyphen\\b",
+        "replacement": "-"
+    },
+    {
+        "pattern": "\\bdash\\b",
+        "replacement": "\u2014"
+    },
+    {
+        "pattern": "\\bdunder\\b",
+        "replacement": "__"
+    },
+    {
+        "pattern": "\\bdouble underscore\\b",
+        "replacement": "__"
+    },
+    {
+        "pattern": "\\bunderscore\\b",
+        "replacement": "_"
+    },
+    {
+        "pattern": "\\bforward slash\\b",
+        "replacement": "/"
+    },
+    {
+        "pattern": " backslash ",
+        "replacement": "\\"
+    },
+    {
+        "pattern": "^vertical bar ",
+        "replacement": "|"
+    },
+    {
+        "pattern": " vertical bar$",
+        "replacement": "|"
+    },
+    {
+        "pattern": " vertical bar ",
+        "replacement": "|"
+    },
+    {
+        "pattern": "\\bat sign\\b",
+        "replacement": "@"
+    },
+    {
+        "pattern": "\\bhash\\b",
+        "replacement": "#"
+    },
+    {
+        "pattern": "[^\\w]*\\bpercent\\b[^\\w]*(?=\\w)",
+        "replacement": "% "
+    },
+    {
+        "pattern": "[^\\w]*\\bpercent\\b",
+        "replacement": "%"
+    },
+    {
+        "pattern": "\\bcaret\\b",
+        "replacement": "^"
+    },
+    {
+        "pattern": "\\bampersand\\b",
+        "replacement": "&"
+    },
+    {
+        "pattern": "\\basterisk\\b",
+        "replacement": "*"
+    },
+    {
+        "pattern": "\\bplus\\b",
+        "replacement": "+"
+    },
+    {
+        "pattern": "\\bequals\\b",
+        "replacement": "="
+    },
+    {
+        "pattern": "\\bless than\\b",
+        "replacement": "<"
+    },
+    {
+        "pattern": "\\bgreater than\\b",
+        "replacement": ">"
+    },
+    {
+        "pattern": "\\btilde\\b",
+        "replacement": "~"
+    },
+    {
+        "pattern": "\\bgrave accent\\b",
+        "replacement": "`"
+    }
+]

@@ -1,35 +1,214 @@
 [
-    { "pattern": "открывающая скобка круглая", "replacement": "(" },
-    { "pattern": "закрывающая скобка круглая", "replacement": ")" },
-    { "pattern": "открывающая скобка квадратная", "replacement": "[" },
-    { "pattern": "закрывающая скобка квадратная", "replacement": "]" },
-    { "pattern": "открывающая скобка фигурная", "replacement": "{" },
-    { "pattern": "закрывающая скобка фигурная", "replacement": "}" },
-    { "pattern": "точка", "replacement": "." },
-    { "pattern": "запятая", "replacement": "," },
-    { "pattern": "двоеточие", "replacement": ":" },
-    { "pattern": "точка с запятой", "replacement": ";" },
-    { "pattern": "вопросительный знак", "replacement": "?" },
-    { "pattern": "восклицательный знак", "replacement": "!" },
-    { "pattern": "апостроф", "replacement": "'" },
-    { "pattern": "кавычка", "replacement": "\"" },
-    { "pattern": "многоточие", "replacement": "…" },
-    { "pattern": "дефис", "replacement": "-" },
-    { "pattern": "тире", "replacement": "—" },
-    { "pattern": "нижнее подчёркивание", "replacement": "_" },
-    { "pattern": "косая черта", "replacement": "/" },
-    { "pattern": "обратная косая черта", "replacement": "\\" },
-    { "pattern": "вертикальная черта", "replacement": "|" },
-    { "pattern": "собака", "replacement": "@" },
-    { "pattern": "решётка", "replacement": "#" },
-    { "pattern": "процент", "replacement": "%" },
-    { "pattern": "циркумфлекс", "replacement": "^" },
-    { "pattern": "амперсанд", "replacement": "&" },
-    { "pattern": "звёздочка", "replacement": "*" },
-    { "pattern": "плюс", "replacement": "+" },
-    { "pattern": "равно", "replacement": "=" },
-    { "pattern": "меньше", "replacement": "<" },
-    { "pattern": "больше", "replacement": ">" },
-    { "pattern": "тильда", "replacement": "~" },
-    { "pattern": "обратный апостроф", "replacement": "`" }
-  ]
+    {
+        "pattern": "\\bоткрывающая круглая скобка\\b[^\\w]*",
+        "replacement": "("
+    },
+    {
+        "pattern": "\\bоткрывающая скобка круглая\\b[^\\w]*",
+        "replacement": "("
+    },
+    {
+        "pattern": "[^\\w]*\\bзакрывающая круглая скобка\\b",
+        "replacement": ")"
+    },
+    {
+        "pattern": "[^\\w]*\\bзакрывающая скобка круглая\\b",
+        "replacement": ")"
+    },
+    {
+        "pattern": "\\bоткрывающая квадратная скобка\\b[^\\w]*",
+        "replacement": "["
+    },
+    {
+        "pattern": "\\bоткрывающая скобка квадратная\\b[^\\w]*",
+        "replacement": "["
+    },
+    {
+        "pattern": "[^\\w]*\\bзакрывающая квадратная скобка\\b",
+        "replacement": "]"
+    },
+    {
+        "pattern": "[^\\w]*\\bзакрывающая скобка квадратная\\b",
+        "replacement": "]"
+    },
+    {
+        "pattern": "\\bоткрывающая фигурная скобка\\b[^\\w]*",
+        "replacement": "{"
+    },
+    {
+        "pattern": "\\bоткрывающая скобка фигурная\\b[^\\w]*",
+        "replacement": "{"
+    },
+    {
+        "pattern": "[^\\w]*\\bзакрывающая фигурная скобка\\b",
+        "replacement": "}"
+    },
+    {
+        "pattern": "[^\\w]*\\bзакрывающая скобка фигурная\\b",
+        "replacement": "}"
+    },
+    {
+        "pattern": "[^\\w]*\\bточка\\b[^\\w]*(?=\\w)",
+        "replacement": ". "
+    },
+    {
+        "pattern": "[^\\w]*\\bточка\\b",
+        "replacement": "."
+    },
+    {
+        "pattern": "[^\\w]*\\bзапятая\\b[^\\w]*(?=\\w)",
+        "replacement": ", "
+    },
+    {
+        "pattern": "[^\\w]*\\bзапятая\\b",
+        "replacement": ","
+    },
+    {
+        "pattern": "[^\\w]*\\bдвоеточие\\b[^\\w]*(?=\\w)",
+        "replacement": ": "
+    },
+    {
+        "pattern": "[^\\w]*\\bдвоеточие\\b",
+        "replacement": ":"
+    },
+    {
+        "pattern": "[^\\w]*\\bточка с запятой\\b[^\\w]*(?=\\w)",
+        "replacement": "; "
+    },
+    {
+        "pattern": "[^\\w]*\\bточка с запятой\\b",
+        "replacement": ";"
+    },
+    {
+        "pattern": "[^\\w]*\\bвопросительный знак\\b[^\\w]*(?=\\w)",
+        "replacement": "? "
+    },
+    {
+        "pattern": "[^\\w]*\\bвопросительный знак\\b",
+        "replacement": "?"
+    },
+    {
+        "pattern": "[^\\w]*\\bвосклицательный знак\\b[^\\w]*(?=\\w)",
+        "replacement": "! "
+    },
+    {
+        "pattern": "[^\\w]*\\bвосклицательный знак\\b",
+        "replacement": "!"
+    },
+    {
+        "pattern": "\\bапостроф\\b",
+        "replacement": "'"
+    },
+    {
+        "pattern": "\\bодинарная кавычка\\b",
+        "replacement": "'"
+    },
+    {
+        "pattern": "\\bдвойная кавычка\\b",
+        "replacement": "\""
+    },
+    {
+        "pattern": "\\bкавычка\\b",
+        "replacement": "\""
+    },
+    {
+        "pattern": "[^\\w]*\\bмноготочие\\b[^\\w]*(?=\\w)",
+        "replacement": "… "
+    },
+    {
+        "pattern": "[^\\w]*\\bмноготочие\\b",
+        "replacement": "…"
+    },
+    {
+        "pattern": "\\bдефис\\b",
+        "replacement": "-"
+    },
+    {
+        "pattern": "\\bтире\\b",
+        "replacement": "—"
+    },
+    {
+        "pattern": "\\bдвойное нижнее подчеркивание\\b",
+        "replacement": "__"
+    },
+    {
+        "pattern": "\\bнижнее подч[eё]ркивание\\b",
+        "replacement": "_"
+    },
+    {
+        "pattern": "\\bнижнее подчеркивание\\b",
+        "replacement": "_"
+    },
+    {
+        "pattern": "\\bкосая черта\\b",
+        "replacement": "/"
+    },
+    {
+        "pattern": " обратная косая черта ",
+        "replacement": "\\"
+    },
+    {
+        "pattern": "^вертикальная черта ",
+        "replacement": "|"
+    },
+    {
+        "pattern": " вертикальная черта$",
+        "replacement": "|"
+    },
+    {
+        "pattern": " вертикальная черта ",
+        "replacement": "|"
+    },
+    {
+        "pattern": "\\bсобака\\b",
+        "replacement": "@"
+    },
+    {
+        "pattern": "\\bреш[eё]тка\\b",
+        "replacement": "#"
+    },
+    {
+        "pattern": "[^\\w]*\\bпроцент\\b[^\\w]*(?=\\w)",
+        "replacement": "% "
+    },
+    {
+        "pattern": "[^\\w]*\\bпроцент\\b",
+        "replacement": "%"
+    },
+    {
+        "pattern": "\\bциркумфлекс\\b",
+        "replacement": "^"
+    },
+    {
+        "pattern": "\\bамперсанд\\b",
+        "replacement": "&"
+    },
+    {
+        "pattern": "\\bзв[eё]здочка\\b",
+        "replacement": "*"
+    },
+    {
+        "pattern": "\\bплюс\\b",
+        "replacement": "+"
+    },
+    {
+        "pattern": "\\bравно\\b",
+        "replacement": "="
+    },
+    {
+        "pattern": "\\bменьше\\b",
+        "replacement": "<"
+    },
+    {
+        "pattern": "\\bбольше\\b",
+        "replacement": ">"
+    },
+    {
+        "pattern": "\\bтильда\\b",
+        "replacement": "~"
+    },
+    {
+        "pattern": "\\bобратный апостроф\\b",
+        "replacement": "`"
+    }
+]

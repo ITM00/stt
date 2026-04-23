@@ -65,6 +65,11 @@ class TextPostProcessor:
             flags=re.IGNORECASE,
         )
 
+    def _normalize_punctuation_spacing(self, text: str) -> str:
+        # Ensure sentence punctuation has a trailing space when it is followed by
+        # another word token (e.g. "hello,world" -> "hello, world").
+        return re.sub(r"([,.;:!?…])(?=[^\W\d_])", r"\1 ", text, flags=re.UNICODE)
+
     def process(self, text: str, template_path: str | None = None) -> str:
         templates = self.templates
         if template_path is not None and template_path != self.template_path:
@@ -73,6 +78,7 @@ class TextPostProcessor:
         output = self._apply_templates(text, templates)
         output = self._apply_templates(output, self.dev_dialect_templates)
         output = self._apply_spoken_layout_commands(output)
+        output = self._normalize_punctuation_spacing(output)
         return output.strip()
 
     def _format_dev_dialect(self, match: Match[str]) -> str:
