@@ -35,6 +35,8 @@ def test_toggle_transitions_recording_processing_idle() -> None:
     )
 
     app.toggle_recording()
+    on_first_audio_frame = recorder.start.call_args.kwargs["on_first_audio_frame"]
+    on_first_audio_frame()
     app.toggle_recording()
 
     deadline = time.time() + 2.0
@@ -43,7 +45,7 @@ def test_toggle_transitions_recording_processing_idle() -> None:
         time.sleep(0.01)
 
     assert app.state == "idle"
-    status_sink.update.assert_has_calls([call("recording"), call("processing"), call("idle")])
+    status_sink.update.assert_has_calls([call("warmup"), call("recording"), call("processing"), call("idle")])
     postprocessor.process.assert_called_once_with(
         "hello world",
         template_path="app/templates/punctuation_signs_en.json",
@@ -89,7 +91,7 @@ def test_silence_timeout_triggers_processing_pipeline() -> None:
         time.sleep(0.01)
 
     assert app.state == "idle"
-    status_sink.update.assert_has_calls([call("recording"), call("processing"), call("idle")])
+    status_sink.update.assert_has_calls([call("warmup"), call("processing"), call("idle")])
     postprocessor.process.assert_called_once_with(
         "hello world",
         template_path="app/templates/punctuation_signs_en.json",
@@ -127,6 +129,8 @@ def test_auto_paste_captures_target_and_attempts_paste_on_success() -> None:
     )
 
     app.toggle_recording()
+    on_first_audio_frame = recorder.start.call_args.kwargs["on_first_audio_frame"]
+    on_first_audio_frame()
     app.toggle_recording()
 
     deadline = time.time() + 2.0
@@ -137,3 +141,34 @@ def test_auto_paste_captures_target_and_attempts_paste_on_success() -> None:
     assert app.state == "idle"
     paste_manager.capture_recording_target.assert_called_once_with()
     paste_manager.paste_to_target_or_active.assert_called_once_with()
+
+
+def test_first_audio_frame_moves_warmup_to_recording() -> None:
+    qt_app = QApplication.instance() or QApplication([])
+
+    recorder = Mock()
+    transcriber = Mock()
+    postprocessor = Mock()
+    clipboard = Mock()
+    paste_manager = Mock()
+    status_sink = Mock()
+
+    app = TranscriptionOrchestrator(
+        recorder=recorder,
+        transcriber=transcriber,
+        postprocessor=postprocessor,
+        clipboard=clipboard,
+        paste_manager=paste_manager,
+        status_sink=status_sink,
+        qt_parent=qt_app,
+    )
+
+    app.toggle_recording()
+    assert app.state == "warmup"
+
+    on_first_audio_frame = recorder.start.call_args.kwargs["on_first_audio_frame"]
+    on_first_audio_frame()
+    qt_app.processEvents()
+
+    assert app.state == "recording"
+    status_sink.update.assert_has_calls([call("warmup"), call("recording")])

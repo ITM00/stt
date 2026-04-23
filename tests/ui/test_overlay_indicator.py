@@ -25,6 +25,10 @@ def test_overlay_updates_visual_state() -> None:
     assert overlay.windowFlags() & Qt.WindowType.FramelessWindowHint
     assert overlay.palette().color(overlay.backgroundRole()).name().lower() == "#ff0000"
 
+    overlay.set_state("warmup")
+    assert overlay.current_state == "warmup"
+    assert overlay.label.text() == "WARMUP"
+
     overlay.set_state("processing")
     assert overlay.label.text() == "PROCESSING"
     assert overlay.size() == initial_size

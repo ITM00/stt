@@ -142,3 +142,24 @@ def test_signal_above_threshold_resets_silence_timeout(monkeypatch) -> None:
 
     timeout_callback.assert_called_once()
     recorder.stop()
+
+
+def test_first_audio_frame_callback_fires_once() -> None:
+    stream_holder: dict[str, _FakeStream | None] = {"stream": None}
+
+    def factory(**kwargs):
+        stream_holder["stream"] = _FakeStream()
+        stream_holder["stream"].kwargs = kwargs
+        return stream_holder["stream"]
+
+    first_frame_callback = Mock()
+    recorder = AudioRecorder(sample_rate=16000, channels=1, stream_factory=factory)
+    recorder.start(on_first_audio_frame=first_frame_callback)
+
+    callback = stream_holder["stream"].kwargs["callback"]
+    frame = np.array([[100], [200]], dtype=np.int16)
+    callback(frame, frame.shape[0], None, None)
+    callback(frame, frame.shape[0], None, None)
+
+    first_frame_callback.assert_called_once()
+    recorder.stop()

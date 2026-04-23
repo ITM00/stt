@@ -34,10 +34,16 @@ class AudioRecorder:
         self._frames: list[bytes] = []
         self._stream: Any | None = None
         self._silence_timeout_callback: Callable[[], None] | None = None
+        self._first_audio_frame_callback: Callable[[], None] | None = None
+        self._first_audio_frame_seen = False
         self._last_signal_time: float | None = None
         self._silence_timeout_fired = False
 
-    def start(self, on_silence_timeout: Callable[[], None] | None = None) -> None:
+    def start(
+        self,
+        on_silence_timeout: Callable[[], None] | None = None,
+        on_first_audio_frame: Callable[[], None] | None = None,
+    ) -> None:
         self._logger.info(
             "AudioRecorder.start called sample_rate=%s channels=%s",
             self.sample_rate,
@@ -46,6 +52,8 @@ class AudioRecorder:
         self._frames.clear()
         self.is_recording = True
         self._silence_timeout_callback = on_silence_timeout
+        self._first_audio_frame_callback = on_first_audio_frame
+        self._first_audio_frame_seen = False
         self._last_signal_time = time.monotonic()
         self._silence_timeout_fired = False
         if self._stream_factory is None:
@@ -90,6 +98,8 @@ class AudioRecorder:
 
         self.is_recording = False
         self._silence_timeout_callback = None
+        self._first_audio_frame_callback = None
+        self._first_audio_frame_seen = False
         self._last_signal_time = None
         self._silence_timeout_fired = False
         output = b"".join(self._frames)
@@ -117,6 +127,10 @@ class AudioRecorder:
 
         if status:
             self._logger.warning("sounddevice callback status=%s", status)
+        if not self._first_audio_frame_seen:
+            self._first_audio_frame_seen = True
+            if self._first_audio_frame_callback is not None:
+                Thread(target=self._first_audio_frame_callback, daemon=True).start()
         pcm = self._pcm16_from_input(indata)
         db_level = self._signal_db(pcm)
         now = time.monotonic()

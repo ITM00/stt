@@ -9,9 +9,10 @@ class OverlayIndicator(QWidget):
     _WINDOW_PADDING_X = 16
     _WINDOW_PADDING_Y = 8
     _BOTTOM_MARGIN = 24
-    _STATE_LABELS = ("IDLE", "RECORDING", "PROCESSING")
+    _STATE_LABELS = ("IDLE", "WARMUP", "RECORDING", "PROCESSING")
     _COLORS_BY_STATE = {
         "idle": QColor("#008000"),
+        "warmup": QColor("#f39c12"),
         "recording": QColor("#ff0000"),
         "processing": QColor("#273c75"),
     }

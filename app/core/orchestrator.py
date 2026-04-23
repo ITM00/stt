@@ -49,13 +49,16 @@ class TranscriptionOrchestrator:
             if self.state == "idle":
                 if self.auto_paste_enabled:
                     self.paste_manager.capture_recording_target()
-                self.recorder.start(on_silence_timeout=self._on_silence_timeout)
-                self.state = "recording"
-                self.status_sink.update("recording")
-                self._logger.info("state transitioned to recording")
+                self.recorder.start(
+                    on_silence_timeout=self._on_silence_timeout,
+                    on_first_audio_frame=self._on_first_audio_frame,
+                )
+                self.state = "warmup"
+                self.status_sink.update("warmup")
+                self._logger.info("state transitioned to warmup")
                 return
 
-            if self.state == "recording":
+            if self.state in ("warmup", "recording"):
                 self._start_processing_locked(trigger="manual")
                 return
 
@@ -67,9 +70,17 @@ class TranscriptionOrchestrator:
 
     def _on_silence_timeout(self) -> None:
         with self._state_lock:
-            if self.state != "recording":
+            if self.state not in ("warmup", "recording"):
                 return
             self._start_processing_locked(trigger="silence-timeout")
+
+    def _on_first_audio_frame(self) -> None:
+        with self._state_lock:
+            if self.state != "warmup":
+                return
+            self.state = "recording"
+            self.status_sink.update("recording")
+            self._logger.info("state transitioned to recording")
 
     def _process_audio_job(self) -> None:
         try:
