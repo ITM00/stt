@@ -1,4 +1,5 @@
 import numpy as np
+from unittest.mock import Mock
 
 from app.core.audio_recorder import AudioRecorder
 
@@ -64,3 +65,80 @@ def test_stream_callback_buffers_pcm16_bytes() -> None:
     callback(indata, indata.shape[0], None, None)
 
     assert recorder.stop() == indata.astype(np.int16).tobytes()
+
+
+def test_silence_timeout_invokes_callback_after_configured_duration(monkeypatch) -> None:
+    stream_holder: dict[str, _FakeStream | None] = {"stream": None}
+    now = [0.0]
+
+    def fake_monotonic() -> float:
+        return now[0]
+
+    monkeypatch.setattr("app.core.audio_recorder.time.monotonic", fake_monotonic)
+
+    def factory(**kwargs):
+        stream_holder["stream"] = _FakeStream()
+        stream_holder["stream"].kwargs = kwargs
+        return stream_holder["stream"]
+
+    timeout_callback = Mock()
+    recorder = AudioRecorder(
+        sample_rate=16000,
+        channels=1,
+        stream_factory=factory,
+        silence_threshold_db=30.0,
+        silence_timeout_seconds=3.0,
+    )
+    recorder.start(on_silence_timeout=timeout_callback)
+
+    callback = stream_holder["stream"].kwargs["callback"]
+    silent = np.zeros((160, 1), dtype=np.int16)
+    callback(silent, silent.shape[0], None, None)  # t=0.0
+    now[0] = 2.9
+    callback(silent, silent.shape[0], None, None)  # t=2.9
+    now[0] = 3.1
+    callback(silent, silent.shape[0], None, None)  # t=3.1
+    now[0] = 3.3
+    callback(silent, silent.shape[0], None, None)  # one-shot
+
+    timeout_callback.assert_called_once()
+    recorder.stop()
+
+
+def test_signal_above_threshold_resets_silence_timeout(monkeypatch) -> None:
+    stream_holder: dict[str, _FakeStream | None] = {"stream": None}
+    now = [0.0]
+
+    def fake_monotonic() -> float:
+        return now[0]
+
+    monkeypatch.setattr("app.core.audio_recorder.time.monotonic", fake_monotonic)
+
+    def factory(**kwargs):
+        stream_holder["stream"] = _FakeStream()
+        stream_holder["stream"].kwargs = kwargs
+        return stream_holder["stream"]
+
+    timeout_callback = Mock()
+    recorder = AudioRecorder(
+        sample_rate=16000,
+        channels=1,
+        stream_factory=factory,
+        silence_threshold_db=30.0,
+        silence_timeout_seconds=3.0,
+    )
+    recorder.start(on_silence_timeout=timeout_callback)
+
+    callback = stream_holder["stream"].kwargs["callback"]
+    silent = np.zeros((160, 1), dtype=np.int16)
+    loud = np.full((160, 1), 100, dtype=np.int16)  # ~40 dB relative level
+    callback(silent, silent.shape[0], None, None)  # t=0.0
+    now[0] = 2.9
+    callback(loud, loud.shape[0], None, None)  # reset timer
+    now[0] = 5.5
+    callback(silent, silent.shape[0], None, None)  # <3s since loud
+    now[0] = 6.2
+    callback(silent, silent.shape[0], None, None)  # >3s since loud
+
+    timeout_callback.assert_called_once()
+    recorder.stop()

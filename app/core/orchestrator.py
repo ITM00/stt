@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 
 from PySide6.QtCore import QObject, Qt, Signal
 
@@ -30,6 +31,7 @@ class TranscriptionOrchestrator:
         self.clipboard = clipboard
         self.status_sink = status_sink
         self.state = "idle"
+        self._state_lock = Lock()
         self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="stt-worker")
         self._bridge: _ProcessingBridge | None = None
         if qt_parent is not None:
@@ -39,19 +41,29 @@ class TranscriptionOrchestrator:
 
     def toggle_recording(self) -> None:
         self._logger.info("toggle_recording called state=%s", self.state)
-        if self.state == "idle":
-            self.recorder.start()
-            self.state = "recording"
-            self.status_sink.update("recording")
-            self._logger.info("state transitioned to recording")
-            return
+        with self._state_lock:
+            if self.state == "idle":
+                self.recorder.start(on_silence_timeout=self._on_silence_timeout)
+                self.state = "recording"
+                self.status_sink.update("recording")
+                self._logger.info("state transitioned to recording")
+                return
 
-        if self.state == "recording":
-            self.state = "processing"
-            self.status_sink.update("processing")
-            self._logger.info("state transitioned to processing")
-            self._executor.submit(self._process_audio_job)
-            return
+            if self.state == "recording":
+                self._start_processing_locked(trigger="manual")
+                return
+
+    def _start_processing_locked(self, *, trigger: str) -> None:
+        self.state = "processing"
+        self.status_sink.update("processing")
+        self._logger.info("state transitioned to processing trigger=%s", trigger)
+        self._executor.submit(self._process_audio_job)
+
+    def _on_silence_timeout(self) -> None:
+        with self._state_lock:
+            if self.state != "recording":
+                return
+            self._start_processing_locked(trigger="silence-timeout")
 
     def _process_audio_job(self) -> None:
         try:
