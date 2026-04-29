@@ -12,6 +12,7 @@ class TrayIconController:
         self,
         on_quit: Callable[[], None] | None = None,
         on_settings: Callable[[], None] | None = None,
+        on_options: Callable[[], None] | None = None,
     ) -> None:
         app = QApplication.instance()
         if app is None:
@@ -25,6 +26,10 @@ class TrayIconController:
         settings_action = QAction("Settings", self.menu)
         settings_action.triggered.connect(on_settings or (lambda: None))
         self.menu.addAction(settings_action)
+
+        options_action = QAction("Options", self.menu)
+        options_action.triggered.connect(on_options or (lambda: None))
+        self.menu.addAction(options_action)
 
         quit_action = QAction("Quit", self.menu)
         quit_action.triggered.connect(on_quit or app.quit)

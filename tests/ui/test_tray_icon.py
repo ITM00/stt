@@ -28,3 +28,16 @@ def test_tray_settings_action_triggers_callback() -> None:
     action = next(a for a in tray.menu.actions() if a.text() == "Settings")
     action.trigger()
     assert calls["count"] == 1
+
+
+def test_tray_options_action_triggers_callback() -> None:
+    _ensure_app()
+    calls = {"count": 0}
+
+    def on_options() -> None:
+        calls["count"] += 1
+
+    tray = TrayIconController(on_options=on_options)
+    action = next(a for a in tray.menu.actions() if a.text() == "Options")
+    action.trigger()
+    assert calls["count"] == 1

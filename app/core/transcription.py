@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -139,15 +140,21 @@ class TranscriptionService:
 
     def transcribe(self, audio_bytes: bytes) -> TranscriptionResult:
         audio = self._pcm16_bytes_to_float32(audio_bytes)
+        return self._transcribe_input(audio)
+
+    def transcribe_file(self, audio_path: str | Path) -> TranscriptionResult:
+        return self._transcribe_input(str(audio_path))
+
+    def _transcribe_input(self, audio_input: Any) -> TranscriptionResult:
         model = self._get_model()
 
         if hasattr(model, "transcribe"):
             kwargs: dict[str, Any] = self._decode_options()
             if self.language:
                 kwargs["language"] = self.language
-            segments, _info = model.transcribe(audio, **kwargs)
+            segments, _info = model.transcribe(audio_input, **kwargs)
         else:
-            segments = model(audio_bytes)
+            segments = model(audio_input)
 
         text = " ".join(segment.text.strip() for segment in segments).strip()
         template_path = RU_TEMPLATE_PATH if CYRILLIC_PATTERN.search(text) else EN_TEMPLATE_PATH

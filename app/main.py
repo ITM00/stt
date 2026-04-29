@@ -16,6 +16,7 @@ from app.core.orchestrator import TranscriptionOrchestrator
 from app.core.paste_manager import PasteManager
 from app.core.text_postprocessor import TextPostProcessor
 from app.core.transcription import TranscriptionService
+from app.ui.options_dialog import OptionsDialog
 from app.ui.overlay_indicator import OverlayIndicator
 from app.ui.settings_dialog import SettingsDialog
 from app.ui.tray_icon import TrayIconController
@@ -125,7 +126,25 @@ def create_app(
             return
         user_settings.record_toggle_hotkey = effective_hotkey
 
-    tray = TrayIconController(on_quit=qt_app.quit, on_settings=open_settings)
+    def open_options() -> None:
+        dialog = OptionsDialog(transcriber=transcriber)
+        screen = qt_app.primaryScreen()
+        if screen is not None:
+            dialog.adjustSize()
+            rect = screen.availableGeometry()
+            dialog.move(
+                rect.center().x() - dialog.width() // 2,
+                rect.center().y() - dialog.height() // 2,
+            )
+        QTimer.singleShot(0, dialog.raise_)
+        QTimer.singleShot(0, dialog.activateWindow)
+        dialog.exec()
+
+    tray = TrayIconController(
+        on_quit=qt_app.quit,
+        on_settings=open_settings,
+        on_options=open_options,
+    )
     status_sink = UiStatusSink(overlay=overlay, tray=tray)
 
     transcriber = TranscriptionService(

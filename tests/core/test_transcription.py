@@ -144,3 +144,21 @@ def test_transcribe_allows_overriding_minimal_normalization_decode_options() -> 
     result = service.transcribe(np.array([1, -1], dtype=np.int16).tobytes())
 
     assert result == TranscriptionResult(text="custom strict", template_path=EN_TEMPLATE_PATH)
+
+
+def test_transcribe_file_passes_path_to_model_transcribe() -> None:
+    class StubModel:
+        def __init__(self) -> None:
+            self.last_audio = None
+
+        def transcribe(self, audio, **_kwargs):  # noqa: ANN001
+            self.last_audio = audio
+            return [type("Segment", (), {"text": "from file"})()], {}
+
+    stub = StubModel()
+    service = TranscriptionService(model_loader=lambda *_args, **_kwargs: stub)
+
+    result = service.transcribe_file("D:/temp/audio.wav")
+
+    assert stub.last_audio == "D:/temp/audio.wav"
+    assert result == TranscriptionResult(text="from file", template_path=EN_TEMPLATE_PATH)
